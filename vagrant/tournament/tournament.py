@@ -67,7 +67,12 @@ def playerStandings():
     """
     conn = connect()
     c = conn.cursor()
-    c.execute("""SELECT players.id, players.name, count())
+    c.execute("""select p.id, p.name, count(m.id) matches, count(w.winner) wins
+					from players p
+					left join matches m on p.id = m.player1 or p.id = m.player2
+					left join match_wins w on p.id = w.winner
+					group by p.id, p.name""")
+	# pretty close, the counts need to be divided by the size of the matches table
 
 
 def reportMatch(winner, loser):
