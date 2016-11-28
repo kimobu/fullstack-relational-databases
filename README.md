@@ -19,3 +19,13 @@ To setup the database, perform the following from within the Vagrant shell:
 To test the application, perform from within the Vagrant shell:
 
 `python tournament_test.py`
+
+# Files
+## tournament.sql
+This file contains SQL commands to create the database, tables, and views needed by the application.
+
+## tournament.py
+This is a python program with functions to interact with the database. This allows someone to insert and delete players and matches, and to query standings and pairings.
+
+## tournament_test.py
+This is a python program to perform unit tests
