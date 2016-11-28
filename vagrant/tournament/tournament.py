@@ -13,6 +13,11 @@ def connect():
 
 def deleteMatches():
     """Remove all the match records from the database."""
+    conn = connect()
+    c = conn.cursor()
+    c.execute("""DELETE FROM matches""")
+    conn.commit()
+    conn.close()
 
 
 def deletePlayers():
@@ -38,7 +43,6 @@ def countPlayers():
 
 def registerPlayer(name):
     """Adds a player to the tournament database.
-
     The database assigns a unique serial id number for the player.  (This
     should be handled by your SQL database schema, not in your Python code.)
 
@@ -55,8 +59,8 @@ def registerPlayer(name):
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
 
-    The first entry in the list should be the player in first place, or a player
-    tied for first place if there is currently a tie.
+    The first entry in the list should be the player in first place, or a
+    player tied for first place if there is currently a tie.
 
     Returns:
       A list of tuples, each of which contains (id, name, wins, matches):
@@ -67,12 +71,14 @@ def playerStandings():
     """
     conn = connect()
     c = conn.cursor()
-    c.execute("""select p.id, p.name, count(m.id) matches, count(w.winner) wins
-					from players p
-					left join matches m on p.id = m.player1 or p.id = m.player2
-					left join match_wins w on p.id = w.winner
-					group by p.id, p.name""")
-	# pretty close, the counts need to be divided by the size of the matches table
+    c.execute("""SELECT p.id, p.name, COALESCE(w.count,0) AS wins,
+                    COALESCE(g.count,0) AS matches
+                    FROM players p
+                    LEFT OUTER JOIN wins w ON p.id = w.id
+                    LEFT OUTER JOIN games g ON p.id = g.id
+                    ORDER BY wins DESC""")
+    standings = c.fetchall()
+    return standings
 
 
 def reportMatch(winner, loser):
@@ -82,6 +88,12 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
+    conn = connect()
+    c = conn.cursor()
+    c.execute("""INSERT INTO matches (winner, loser) VALUES (%s,%s)""",
+              (winner, loser))
+    conn.commit()
+    conn.close()
 
 
 def swissPairings():
@@ -99,3 +111,14 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
+    standings = playerStandings()
+    pairings = []
+    count = 0
+    while count < len(standings):
+        p1id = standings[count][0]
+        p1name = standings[count][1]
+        p2id = standings[count+1][0]
+        p2name = standings[count+1][1]
+        pairings.append((p1id, p1name, p2id, p2name))
+        count = count + 2
+    return pairings

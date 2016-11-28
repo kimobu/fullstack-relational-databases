@@ -8,8 +8,9 @@
 
 
 DROP TABLE IF EXISTS matches CASCADE;
-DROP TABLE IF EXISTS match_wins CASCADE;
 DROP TABLE IF EXISTS players CASCADE;
+DROP VIEW IF EXISTS wins;
+DROP VIEW IF EXISTS games;
 DROP DATABASE IF EXISTS tournament;
 
 CREATE DATABASE tournament;
@@ -20,23 +21,29 @@ CREATE TABLE players (
 );
 CREATE TABLE matches (
   id SERIAL PRIMARY KEY,
-  player1 integer REFERENCES players ON DELETE CASCADE ON UPDATE CASCADE,
-  player2 integer REFERENCES players ON DELETE CASCADE ON UPDATE CASCADE
+  winner integer REFERENCES players ON DELETE CASCADE ON UPDATE CASCADE,
+  loser integer REFERENCES players ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE TABLE match_wins (
-  id SERIAL PRIMARY KEY,
-  match integer REFERENCES matches ON DELETE CASCADE ON UPDATE CASCADE,
-  winner integer REFERENCES players ON DELETE CASCADE ON UPDATE CASCADE
-);
+CREATE VIEW wins AS
+  SELECT players.id, COUNT(matches.winner)
+  FROM players
+  JOIN matches ON players.id = matches.winner
+  GROUP BY players.id;
 
+CREATE VIEW games AS
+  SELECT players.id, COUNT(matches.id)
+  FROM players
+  JOIN matches ON players.id = matches.winner OR players.id = matches.loser
+  GROUP BY players.id;
 
 INSERT INTO players (name) VALUES ('test1');
 INSERT INTO players (name) VALUES ('test2');
-insert into matches (player1, player2) values (1,2);
-insert into matches (player1, player2) values (1,2);
-insert into matches (player1, player2) values (1,2);
-insert into matches (player1, player2) values (2,1);
-insert into match_wins (match, winner) values (1,1);
-insert into match_wins (match, winner) values (2,1);
-insert into match_wins (match, winner) values (3,2);
-insert into match_wins (match, winner) values (4,1);
+INSERT INTO players (name) VALUES ('test3');
+INSERT INTO players (name) VALUES ('test4');
+insert into matches (winner, loser) values (1,2);
+insert into matches (winner, loser) values (1,2);
+insert into matches (winner, loser) values (1,2);
+insert into matches (winner, loser) values (2,1);
+insert into matches (winner, loser) values (3,1);
+insert into matches (winner, loser) values (1,4);
+insert into matches (winner, loser) values (2,3);
