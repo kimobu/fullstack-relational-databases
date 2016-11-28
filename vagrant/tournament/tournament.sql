@@ -6,15 +6,9 @@
 -- You can write comments in this file by starting them with two dashes, like
 -- these lines here.
 
-
-DROP TABLE IF EXISTS matches CASCADE;
-DROP TABLE IF EXISTS players CASCADE;
-DROP VIEW IF EXISTS wins;
-DROP VIEW IF EXISTS games;
 DROP DATABASE IF EXISTS tournament;
-
 CREATE DATABASE tournament;
-USE DATABASE tournament;
+\c tournament;
 CREATE TABLE players (
   id  SERIAL PRIMARY KEY,
   name  varchar(50)
@@ -35,3 +29,11 @@ CREATE VIEW games AS
   FROM players
   JOIN matches ON players.id = matches.winner OR players.id = matches.loser
   GROUP BY players.id;
+
+CREATE VIEW standings AS
+  SELECT p.id, p.name, COALESCE(w.count,0) AS wins,
+    COALESCE(g.count,0) AS matches
+  FROM players p
+  LEFT OUTER JOIN wins w ON p.id = w.id
+  LEFT OUTER JOIN games g ON p.id = g.id
+  ORDER BY wins DESC;
