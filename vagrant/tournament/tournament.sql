@@ -35,15 +35,3 @@ CREATE VIEW games AS
   FROM players
   JOIN matches ON players.id = matches.winner OR players.id = matches.loser
   GROUP BY players.id;
-
-INSERT INTO players (name) VALUES ('test1');
-INSERT INTO players (name) VALUES ('test2');
-INSERT INTO players (name) VALUES ('test3');
-INSERT INTO players (name) VALUES ('test4');
-insert into matches (winner, loser) values (1,2);
-insert into matches (winner, loser) values (1,2);
-insert into matches (winner, loser) values (1,2);
-insert into matches (winner, loser) values (2,1);
-insert into matches (winner, loser) values (3,1);
-insert into matches (winner, loser) values (1,4);
-insert into matches (winner, loser) values (2,3);
